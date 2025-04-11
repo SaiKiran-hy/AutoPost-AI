@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-
 # Twitter API credentials
 TWITTER_API_KEY = os.getenv("TWITTER_API_KEY")
 TWITTER_API_SECRET = os.getenv("TWITTER_API_SECRET")
@@ -19,9 +18,7 @@ TWITTER_ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
 
 # Hugging Face API credentials
 HUGGINGFACE_API_TOKEN = os.getenv("api_key")
-HUGGINGFACE_MODEL = "runwayml/stable-diffusion-v1-5"
-
-
+HUGGINGFACE_MODEL = os.getenv("HUGGINGFACE_MODEL") 
 
 # Check for missing API keys
 def check_api_keys():
@@ -37,7 +34,7 @@ def check_api_keys():
 
 
 class TextToImageTwitterBot:
-    def __init__(self):
+    def __init__(self):  # Corrected from _init_ to __init__
         check_api_keys()
 
         # Initialize Twitter client
@@ -139,5 +136,5 @@ HUGGINGFACE_API_TOKEN=your_huggingface_api_token
         print("Failed to generate and post image.")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # Corrected from _main_ to __main__
     main()
