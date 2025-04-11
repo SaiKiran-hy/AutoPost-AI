@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator & Twitter Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1DA1F2;
+            --primary-dark: #0d8ecf;
+            --secondary-color: #14171A;
+            --light-color: #F5F8FA;
+            --border-color: #E1E8ED;
+            --success-color: #17BF63;
+            --error-color: #E0245E;
+            --gradient-start: #1DA1F2;
+            --gradient-end: #4267B2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            /* Enhanced light mode background with more vibrant gradient */
+            background: linear-gradient(135deg, #e0f7fa 0%, #bbdefb 25%, #c5cae9 50%, #d1c4e9 75%, #e1bee7 100%);
+            background-size: 400% 400%;
+            animation: gradientBackground 15s ease infinite;
+            color: var(--secondary-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        /* Animation for flowing background gradient */
+        @keyframes gradientBackground {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: #f9f9f9;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.2);
+            background-color: white;
+        }
+
+        .form-group:focus-within label {
+            color: var(--primary-color);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .character-count {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #657786;
+            text-align: right;
+            transition: color 0.3s;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--gradient-end), var(--gradient-start));
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 161, 242, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            background: #9ACBED;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 0.3s;
+            background-color: #fafafa;
+            position: relative;
+        }
+
+        .image-preview:hover {
+            border-color: var(--primary-color);
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+            border-radius: 8px;
+            transition: transform 0.5s;
+        }
+
+        .image-preview.has-image:hover img {
+            transform: scale(1.03);
+        }
+
+        .image-preview .placeholder-text {
+            color: #aaa;
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .status {
+            margin-top: 25px;
+            padding: 18px;
+            border-radius: 8px;
+            display: none;
+            animation-duration: 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+        }
+
+        .status.success {
+            background-color: rgba(23, 191, 99, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(23, 191, 99, 0.3);
+        }
+
+        .status.success::before {
+            background-color: var(--success-color);
+        }
+
+        .status.error {
+            background-color: rgba(224, 36, 94, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(224, 36, 94, 0.3);
+        }
+
+        .status.error::before {
+            background-color: var(--error-color);
+        }
+
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            height: 60px;
+        }
+
+        .loader {
+            display: none;
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .loader div {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            animation: loader 1.2s linear infinite;
+        }
+
+        .loader div:nth-child(1) {
+            top: 0;
+            left: 0;
+            animation-delay: 0s;
+        }
+
+        .loader div:nth-child(2) {
+            top: 0;
+            right: 0;
+            animation-delay: 0.4s;
+        }
+
+        .loader div:nth-child(3) {
+            bottom: 0;
+            right: 0;
+            animation-delay: 0.8s;
+        }
+
+        .loader div:nth-child(4) {
+            bottom: 0;
+            left: 0;
+            animation-delay: 1.2s;
+        }
+
+        @keyframes loader {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.7);
+            }
+        }
+
+        .tweet-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: rgba(29, 161, 242, 0.1);
+        }
+
+        .tweet-link:hover {
+            background-color: rgba(29, 161, 242, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .tweet-link i {
+            margin-right: 5px;
+        }
+
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            transition: transform 0.3s, color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+            color: var(--primary-color);
+        }
+
+        /* Enhanced Dark mode styles */
+        body.dark-mode {
+            /* Improved dark mode background with deep blue to purple gradient */
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 30%, #2c5364 60%, #373b44 90%);
+            background-size: 400% 400%;
+            animation: gradientBackground 15s ease infinite;
+        }
+
+        body.dark-mode .container {
+            background-color: rgba(28, 39, 60, 0.9);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode h1 {
+            color: #1DA1F2;
+            text-shadow: 0 0 10px rgba(29, 161, 242, 0.5);
+        }
+
+        body.dark-mode label {
+            color: #ecf0f1;
+        }
+
+        body.dark-mode textarea,
+        body.dark-mode input[type="text"] {
+            background-color: rgba(52, 73, 94, 0.7);
+            border-color: #465c6e;
+            color: #ecf0f1;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) inset;
+        }
+
+
+        body.dark-mode textarea:focus,
+        body.dark-mode input[type="text"]:focus {
+            background-color: rgba(61, 86, 110, 0.9);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2) inset;
+        }
+
+        body.dark-mode .image-preview {
+            background-color: rgba(52, 73, 94, 0.5);
+            border-color: #465c6e;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) inset;
+        }
+
+        body.dark-mode .image-preview .placeholder-text {
+            color: #bdc3c7;
+        }
+
+        body.dark-mode .theme-toggle {
+            color: #ecf0f1;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        body.dark-mode .character-count {
+            color: #bdc3c7;
+        }
+
+        /* Add subtle glow effects to buttons and inputs in dark mode */
+        body.dark-mode .btn {
+            box-shadow: 0 4px 15px rgba(29, 161, 242, 0.5);
+        }
+
+        body.dark-mode .btn:hover {
+            box-shadow: 0 6px 20px rgba(29, 161, 242, 0.7);
+        }
+
+        /* Animations for elements */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-element {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        /* Pulse animation for buttons */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(29, 161, 242, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(29, 161, 242, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(29, 161, 242, 0);
+            }
+        }
+
+        .btn.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Wave effect for form inputs */
+        @keyframes wave {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .form-focus-effect {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
+            background-size: 200% 100%;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+
+        .form-group:focus-within .form-focus-effect {
+            transform: scaleX(1);
+            animation: wave 2s linear infinite;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <button class="theme-toggle" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+        </button>
+        <h1 class="fade-in-element">"AutoPost AI"</h1>
+
+        <div class="form-group fade-in-element delay-1">
+            <label for="prompt"><i class="fas fa-paint-brush"></i> Image Generation Prompt:</label>
+            <textarea id="prompt" placeholder="Enter a detailed description of the image you want to generate..."></textarea>
+            <div class="form-focus-effect"></div>
+        </div>
+
+        <div class="form-group fade-in-element delay-2">
+            <label for="tweet-text"><i class="fas fa-comment"></i> Tweet Text (optional):</label>
+            <input type="text" id="tweet-text" placeholder="Enter your tweet message or leave blank for default">
+            <div class="character-count">0/280 characters</div>
+            <div class="form-focus-effect"></div>
+        </div>
+
+        <div class="btn-container fade-in-element delay-3">
+            <button id="generate-btn" class="btn pulse">
+                <i class="fas fa-magic"></i> Generate & Post to Twitter
+            </button>
+        </div>
+
+        <div class="loader-container fade-in-element delay-4">
+            <div class="loader" id="loader">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+
+        <div class="image-preview fade-in-element delay-4" id="image-preview-container">
+            <div class="placeholder-text" id="preview-placeholder">
+                <i class="fas fa-image fa-3x"></i>
+                <p style="margin-top: 15px">Your generated image will appear here</p>
+            </div>
+            <img id="preview-image" src="" alt="Generated image preview">
+        </div>
+
+        <div class="status animate__animated" id="status"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const promptInput = document.getElementById('prompt');
+            const tweetTextInput = document.getElementById('tweet-text');
+            const characterCount = document.querySelector('.character-count');
+            const generateBtn = document.getElementById('generate-btn');
+            const previewImage = document.getElementById('preview-image');
+            const previewContainer = document.getElementById('image-preview-container');
+            const previewPlaceholder = document.getElementById('preview-placeholder');
+            const loader = document.getElementById('loader');
+            const status = document.getElementById('status');
+            const themeToggle = document.getElementById('theme-toggle');
+
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            });
+
+            // Remove pulse animation from button when clicked
+            generateBtn.addEventListener('mousedown', function() {
+                this.classList.remove('pulse');
+            });
+
+            // Update character count for tweet text
+            tweetTextInput.addEventListener('input', function() {
+                const count = this.value.length;
+                characterCount.textContent = `${count}/280 characters`;
+
+                if (count > 280) {
+                    characterCount.style.color = 'var(--error-color)';
+                } else if (count > 240) {
+                    characterCount.style.color = '#FFAD1F'; // Twitter's warning color
+                } else {
+                    characterCount.style.color = '#657786';
+                }
+            });
+
+            // Add focus effects for inputs
+            const inputs = [promptInput, tweetTextInput];
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+
+            // Handle form submission
+            generateBtn.addEventListener('click', function() {
+                const prompt = promptInput.value.trim();
+                const tweetText = tweetTextInput.value.trim();
+
+                if (!prompt) {
+                    showStatus('Please enter an image generation prompt.', 'error');
+                    shakeElement(promptInput);
+                    return;
+                }
+
+                if (tweetText.length > 280) {
+                    showStatus('Tweet text exceeds the 280 character limit.', 'error');
+                    shakeElement(tweetTextInput);
+                    return;
+                }
+
+                // Show loader and disable button
+                loader.style.display = 'flex';
+                generateBtn.disabled = true;
+                status.style.display = 'none';
+
+                // Add loading animation to preview
+                previewContainer.classList.add('loading');
+
+                // Send request to backend
+                fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        tweet_text: tweetText || null
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loader.style.display = 'none';
+                    generateBtn.disabled = false;
+                    previewContainer.classList.remove('loading');
+
+                    if (data.success) {
+                        // Display success message with link to tweet
+                        showStatus(`
+                            <i class="fas fa-check-circle"></i> Image generated and posted successfully!
+                            <a href="https://twitter.com/user/status/${data.tweet_id}"
+                               class="tweet-link"
+                               target="_blank">
+                               <i class="fab fa-twitter"></i> View Tweet
+                            </a>
+                        `, 'success', true);
+
+                        // Show image preview if available
+                        if (data.image_url) {
+                            previewPlaceholder.style.display = 'none';
+                            previewImage.src = data.image_url;
+                            previewImage.style.display = 'block';
+                            previewContainer.classList.add('has-image');
+
+                            // Add fade-in animation to image
+                            previewImage.classList.add('animate__animated', 'animate__fadeIn');
+                        }
+                    } else {
+                        showStatus(`<i class="fas fa-exclamation-circle"></i> ${data.error || 'Failed to generate and post image.'}`, 'error', true);
+                    }
+                })
+                .catch(error => {
+                    loader.style.display = 'none';
+                    generateBtn.disabled = false;
+                    previewContainer.classList.remove('loading');
+                    showStatus('<i class="fas fa-exclamation-triangle"></i> An error occurred while communicating with the server.', 'error', true);
+                    console.error('Error:', error);
+                });
+            });
+
+            // Helper function to show status messages
+            function showStatus(message, type, isHTML = false) {
+                status.className = 'status ' + type + ' animate__animated animate__fadeIn';
+                if (isHTML) {
+                    status.innerHTML = message;
+                } else {
+                    status.textContent = message;
+                }
+                status.style.display = 'block';
+            }
+
+            // Helper function to shake an element when there's an error
+            function shakeElement(element) {
+                element.classList.add('animate__animated', 'animate__shakeX');
+                element.addEventListener('animationend', function() {
+                    element.classList.remove('animate__animated', 'animate__shakeX');
+                }, {once: true});
+            }
+
+            // Add typing animation to placeholder
+            const typingEffect = () => {
+                const text = "Imagine a beautiful sunset over mountains...";
+                let i = 0;
+                promptInput.setAttribute('placeholder', '');
+
+                const typing = setInterval(() => {
+                    if (i < text.length && document.activeElement !== promptInput) {
+                        promptInput.setAttribute('placeholder', promptInput.getAttribute('placeholder') + text.charAt(i));
+                        i++;
+                    } else {
+                        clearInterval(typing);
+                    }
+                }, 100);
+            };
+
+            // Start typing effect after a short delay
+            setTimeout(typingEffect, 1000);
+        });
+    </script>
+</body>
+</html>
